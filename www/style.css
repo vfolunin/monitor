@@ -1,0 +1,53 @@
+body {
+    text-align: center;
+}
+
+table.rating {
+    border: 1px solid black;
+    table-layout: fixed;
+    margin: auto;
+}
+
+table.rating tr td {
+    border: 1px solid black;
+    padding: 5px;
+    text-align: center;
+}
+
+table.rating tr td.tdCompare {
+    width: 100px;
+}
+
+table.rating tr td span.sortButton {
+    font-weight: bold;
+    border-bottom: 1px dashed black;
+    cursor: pointer;
+}
+
+table.rating tr td.tdCount {
+    width: 120px;
+}
+
+table.problems {
+    table-layout: fixed;
+    margin: auto;
+}
+
+table.problems tr td {
+    width: 60px;
+    border: 1px solid black;
+    padding: 5px;
+    text-align: center;
+}
+
+table.problems tr td:empty {
+    border-color: white;
+}
+
+.txtMarkA, td.tdMarkA {
+    background-color: ccf;
+}
+
+.txtMarkB, td.tdMarkB {
+    background-color: fcc;
+}
