@@ -2,6 +2,7 @@
 var sites = [
     {
         name : "ACMP",
+        prefix : "acmp_",
         url : "http://acmp.ru/",
         userUrl : function(uid) {
             return this.url + "?main=user&id=" + uid;
@@ -12,6 +13,7 @@ var sites = [
     },
     {
         name : "Timus Online Judge",
+        prefix : "timus_",
         url : "http://acm.timus.ru/",
         userUrl : function(uid) {
             return this.url + "author.aspx?id=" + uid;
@@ -22,6 +24,7 @@ var sites = [
     },
     {
         name : "СГУ",
+        prefix : "sgu_",
         url : "http://acm.sgu.ru/",
         userUrl : function(uid) {
             return this.url + "teaminfo.php?id=" + uid;
@@ -32,6 +35,7 @@ var sites = [
     },
     {
         name : "МЦНМО",
+        prefix : "mccme_",
         url : "http://informatics.mccme.ru/",
         userUrl : function(uid) {
             return this.url + "moodle/submits/view.php?user_id=" + uid;
@@ -42,6 +46,7 @@ var sites = [
     },
     {
         name : "Codeforces",
+        prefix : "cf_",
         url : "http://codeforces.ru/",
         userUrl : function(uid) {
             return this.url + "profile/" + uid;
@@ -56,33 +61,48 @@ var sites = [
 ];
 
 var users = [];
-for (var i = 0; i < stats.length; i++) {
+for (var userNo = 0; userNo < stats.length; userNo++) {
     var user = {};
-    user.id = i;
-    user.name = stats[i].userName;
-    user.total = 0;
-    user.problems = [];
-    for (var j = 0; j < sites.length; j++) {
-        user.problems.push(stats[i].stats[j].problems.length);
-        user.total += stats[i].stats[j].problems.length;
-    }
+    user.userNo = userNo;
+    user.name = stats[userNo].userName;
+    user.total = stats[userNo].problems.length;
+    user.problemsCnt = [];
+    for (var siteNo = 0; siteNo < sites.length; siteNo++)
+        user.problemsCnt.push(filterProblems(userNo, siteNo).length);
     users.push(user);
 }
 
-function getProblemList(userId, siteId) {
+function filterUserId(userNo, siteNo) {
+    for (var i = 0; i < stats[userNo].ids.length; i++)
+        if (stats[userNo].ids[i].substr(0, stats[userNo].ids[i].indexOf("_") + 1) == sites[siteNo].prefix)
+            return stats[userNo].ids[i].substr(stats[userNo].ids[i].indexOf("_") + 1);
+    return "";
+}
+
+function filterProblems(userNo, siteNo) {
+    var filteredProblems = [];
+    for (var i = 0; i < stats[userNo].problems.length; i++)
+        if (stats[userNo].problems[i].substr(0, stats[userNo].problems[i].indexOf("_") + 1) == sites[siteNo].prefix)
+            filteredProblems.push(stats[userNo].problems[i].substr(stats[userNo].problems[i].indexOf("_") + 1));
+    filteredProblems.sort(strnatcmp);
+    return filteredProblems;
+}
+
+function getProblemList(userNo, siteNo) {
     var T_COL = 15;
-    var st = stats[userId].stats[siteId];
-    if (!st.problems.length)
+    var userId = filterUserId(userNo, siteNo);
+    var problems = filterProblems(userNo, siteNo);
+    if (!problems.length)
         return "";
-    var h = "<h3>Задачи <a href=\"" + sites[siteId].url + "\">" + sites[siteId].name + "</a> " +
-            "(решено: " + (st.problems.length ? "<a href=\"" + sites[siteId].userUrl(st.userId) + "\">" + st.problems.length + "</a>" : 0) + ")</h3>";
+    var h = "<h3>Задачи <a href=\"" + sites[siteNo].url + "\">" + sites[siteNo].name + "</a> " +
+            "(решено: " + (problems.length ? "<a href=\"" + sites[siteNo].userUrl(userId) + "\">" + problems.length + "</a>" : 0) + ")</h3>";
     h += "<table class=\"problems\">";
-    for (var i = 0; i < st.problems.length || i % T_COL; i++) {
+    for (var i = 0; i < problems.length || i % T_COL; i++) {
         if (i % T_COL == 0)
             h += "<tr>";
         h += "<td>"
-        if (i < st.problems.length)
-            h += "<a href=\"" + sites[siteId].problemUrl(st.problems[i]) + "\">" + st.problems[i] + "</a>";
+        if (i < problems.length)
+            h += "<a href=\"" + sites[siteNo].problemUrl(problems[i]) + "\">" + problems[i] + "</a>";
         h += "</td>";
         if (i % T_COL == T_COL - 1)
             h += "</tr>";
@@ -91,26 +111,27 @@ function getProblemList(userId, siteId) {
     return h;
 }
 
-function getCmpProblemList(userIdA, userIdB, siteId) {
+function getCmpProblemList(userNoA, userNoB, siteNo) {
     var T_COL = 15;
-    var stA = stats[userIdA].stats[siteId], stB = stats[userIdB].stats[siteId];
-    if (!stA.problems.length && !stB.problems.length)
+    var userIdA = filterUserId(userNoA, siteNo), userIdB = filterUserId(userNoB, siteNo);;
+    var problemsA = filterProblems(userNoA, siteNo), problemsB = filterProblems(userNoB, siteNo);
+    if (!problemsA.length && !problemsB.length)
         return "";
-    var h = "<h3>Задачи <a href=\"" + sites[siteId].url + "\">" + sites[siteId].name + "</a> (решено: " +
-            "<span class=\"txtMarkA\">" + (stA.problems.length ? "<a href=\"" + sites[siteId].userUrl(stA.userId) + "\">" + stA.problems.length + "</a>" : 0) + "</span> / " +
-            "<span class=\"txtMarkB\">" + (stB.problems.length ? "<a href=\"" + sites[siteId].userUrl(stB.userId) + "\">" + stB.problems.length + "</a>" : 0) + "</span>)</h3>";
+    var h = "<h3>Задачи <a href=\"" + sites[siteNo].url + "\">" + sites[siteNo].name + "</a> (решено: " +
+            "<span class=\"txtMarkA\">" + (problemsA.length ? "<a href=\"" + sites[siteNo].userUrl(userIdA) + "\">" + problemsA.length + "</a>" : 0) + "</span> / " +
+            "<span class=\"txtMarkB\">" + (problemsB.length ? "<a href=\"" + sites[siteNo].userUrl(userIdB) + "\">" + problemsB.length + "</a>" : 0) + "</span>)</h3>";
     h += "<table class=\"problems\">";
-    for (var i = 0, j = 0, k = 0; i < stA.problems.length || j < stB.problems.length || k % T_COL; k++) {
+    for (var i = 0, j = 0, k = 0; i < problemsA.length || j < problemsB.length || k % T_COL; k++) {
         if (k % T_COL == 0)
             h += "<tr>";
-        if (i < stA.problems.length && (j >= stB.problems.length || strnatcmp(stA.problems[i], stB.problems[j]) < 0)) {
-            h += "<td class=\"tdMarkA\"><a href=\"" + sites[siteId].problemUrl(stA.problems[i]) + "\">" + stA.problems[i] + "</a></td>";
+        if (i < problemsA.length && (j >= problemsB.length || strnatcmp(problemsA[i], problemsB[j]) < 0)) {
+            h += "<td class=\"tdMarkA\"><a href=\"" + sites[siteNo].problemUrl(problemsA[i]) + "\">" + problemsA[i] + "</a></td>";
             i++;
-        } else if (j < stB.problems.length && (i >= stA.problems.length || strnatcmp(stA.problems[i], stB.problems[j]) > 0)) {
-            h += "<td class=\"tdMarkB\"><a href=\"" + sites[siteId].problemUrl(stB.problems[j]) + "\">" + stB.problems[j] + "</a></td>";
+        } else if (j < problemsB.length && (i >= problemsA.length || strnatcmp(problemsA[i], problemsB[j]) > 0)) {
+            h += "<td class=\"tdMarkB\"><a href=\"" + sites[siteNo].problemUrl(problemsB[j]) + "\">" + problemsB[j] + "</a></td>";
             j++;
-        } else if (i < stA.problems.length && j < stB.problems.length) {
-            h += "<td><a href=\"" + sites[siteId].problemUrl(stA.problems[i]) + "\">" + stA.problems[i] + "</a></td>";
+        } else if (i < problemsA.length && j < problemsB.length) {
+            h += "<td><a href=\"" + sites[siteNo].problemUrl(problemsA[i]) + "\">" + problemsA[i] + "</a></td>";
             i++;
             j++;
         } else {
@@ -123,33 +144,25 @@ function getCmpProblemList(userIdA, userIdB, siteId) {
     return h;
 }
 
-function printStats(id) {
-    var total = 0;
-    for (var i = 0; i < sites.length; i++)
-        total += stats[id].stats[i].problems.length;
-    var h = "<h2>Решения пользователя " + stats[id].userName + " (всего: " + total + ")</h2>";
+function printStats(userNo) {
+    var h = "<h2>Решения пользователя " + stats[userNo].userName + " (всего: " + stats[userNo].problems.length + ")</h2>";
     h += "<h2>(<a href=\"javascript:printRating();\">назад</a>)</h2>";
-    for (var i = 0; i < sites.length; i++)
-        h += getProblemList(id, i);
+    for (var siteNo = 0; siteNo < sites.length; siteNo++)
+        h += getProblemList(userNo, siteNo);
     document.getElementById("container").innerHTML = h;
 }
 
-function printCmpStats(idA, idB) {
-    var totalA = 0, totalB = 0;
-    for (var i = 0; i < sites.length; i++) {
-        totalA += stats[idA].stats[i].problems.length;
-        totalB += stats[idB].stats[i].problems.length;
-    }
+function printCmpStats(userNoA, userNoB) {
     var h = "<h2>Сравнение решений пользователей<br>" +
-            "<span class=\"txtMarkA\">A</span> &mdash; " + stats[idA].userName + " (всего: " + totalA + ")<br>" +
-            "<span class=\"txtMarkB\">B</span> &mdash; " + stats[idB].userName + " (всего: " + totalB + ")</h2>";
+            "<span class=\"txtMarkA\">A</span> &mdash; " + stats[userNoA].userName + " (всего: " + stats[userNoA].problems.length + ")<br>" +
+            "<span class=\"txtMarkB\">B</span> &mdash; " + stats[userNoB].userName + " (всего: " + stats[userNoB].problems.length + ")</h2>";
     h += "<h2>(<a href=\"javascript:printRating();\">назад</a>)</h2>";
-    for (var i = 0; i < sites.length; i++)
-        h += getCmpProblemList(idA, idB, i);
+    for (var siteNo = 0; siteNo < sites.length; siteNo++)
+        h += getCmpProblemList(userNoA, userNoB, siteNo);
     document.getElementById("container").innerHTML = h;
 }
 
-var cmpIdA = -1, cmpIdB = -1;
+var cmpNoA = -1, cmpNoB = -1;
 
 function sortUsers(usersSortMode) {
     if (users.length > 1) {
@@ -159,14 +172,14 @@ function sortUsers(usersSortMode) {
                     return strcmp(a.name, b.name);
                 if (usersSortMode == -1)
                     return b.total - a.total ? b.total - a.total : strcmp(a.name, b.name);
-                return b.problems[usersSortMode] - a.problems[usersSortMode] ? b.problems[usersSortMode] - a.problems[usersSortMode] : strcmp(a.name, b.name);
+                return b.problemsCnt[usersSortMode] - a.problemsCnt[usersSortMode] ? b.problemsCnt[usersSortMode] - a.problemsCnt[usersSortMode] : strcmp(a.name, b.name);
             }
         );
     }
-    if (cmpIdA == -1)
-        cmpIdA = users[0].id;
-    if (cmpIdB == -1)
-        cmpIdB = users[Math.min(users.length - 1, 1)].id;
+    if (cmpNoA == -1)
+        cmpNoA = users[0].userNo;
+    if (cmpNoB == -1)
+        cmpNoB = users[Math.min(users.length - 1, 1)].userNo;
     printRating();
 }
 
@@ -177,14 +190,14 @@ function printRating() {
     for (var i = 0; i < sites.length; i++)
         h += "<td class=\"tdCount\"><span class=\"sortButton\" onclick=\"javascript:sortUsers(" + i + ");\">" + sites[i].name + "</span></td>";
     h += "<td class=\"tdCount\"><span class=\"sortButton\" onclick=\"javascript:sortUsers(-1);\">Всего</span></td>";
-    h += "<td class=\"tdCompare\" colspan=2><a href=\"javascript:printCmpStats(cmpIdA, cmpIdB);\">Сравнить выбранных</a></td></tr>";
+    h += "<td class=\"tdCompare\" colspan=2><a href=\"javascript:printCmpStats(cmpNoA, cmpNoB);\">Сравнить выбранных</a></td></tr>";
     for (var i = 0; i < users.length; i++) {
-        h += "<tr><td>" + (i + 1) + "</td><td><a href=\"javascript:printStats('" + users[i].id + "');\">" + users[i].name + "</a></td>";
+        h += "<tr><td>" + (i + 1) + "</td><td><a href=\"javascript:printStats('" + users[i].userNo + "');\">" + users[i].name + "</a></td>";
         for (var j = 0; j < sites.length; j++)
-            h += "<td>" + users[i].problems[j] + "</td>";
+            h += "<td>" + users[i].problemsCnt[j] + "</td>";
         h += "<td>" + users[i].total + "</td>";
-        h += "<td><input name=\"radioA\" type=\"radio\"" + (users[i].id == cmpIdA ? " checked" : "") + " onclick=\"cmpIdA =" + users[i].id + ";\"></td>";
-        h += "<td><input name=\"radioB\" type=\"radio\"" + (users[i].id == cmpIdB ? " checked" : "") + " onclick=\"cmpIdB =" + users[i].id + ";\"></td>";
+        h += "<td><input name=\"radioA\" type=\"radio\"" + (users[i].userNo == cmpNoA ? " checked" : "") + " onclick=\"cmpNoA =" + users[i].userNo + ";\"></td>";
+        h += "<td><input name=\"radioB\" type=\"radio\"" + (users[i].userNo == cmpNoB ? " checked" : "") + " onclick=\"cmpNoB =" + users[i].userNo + ";\"></td>";
         h += "</tr>";
     }
     h += "</table>";

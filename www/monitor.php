@@ -1,29 +1,23 @@
 <?php
 
-function addQuot($array) {
-    for ($i = 0; $i < count($array); $i++)
-        $array[$i] = "\"" . $array[$i] . "\"";
-    return $array;
-}
-
 function getAcmpProblems($id) {
     $contents = file_get_contents("http://acmp.ru/?main=user&id=" . $id);
     preg_match_all("#\<p class=text\>([\s\S]*?)\</p\>#", $contents, $match);
     preg_match_all("#\<a href=\?main=task\&id_task=[\d]+?>([\d]+?)\</a\>#", $match[1][0], $match);
-    return addQuot(array_values($match[1]));
+    return array_values($match[1]);
 }
 
 function getTimusProblems($id) {
     $contents = file_get_contents("http://acm.timus.ru/author.aspx?id=" . $id);
     preg_match_all("#\<TD CLASS=\"accepted\"\>\<A[\s\S]*?>([\d]+?)\</A\>\</TD\>#", $contents, $match);
-    return addQuot(array_values($match[1]));
+    return array_values($match[1]);
 }
 
 function getSguProblems($id) {
     $contents = file_get_contents("http://acm.sgu.ru/teaminfo.php?id=" . $id);
     preg_match_all("#\<tr\>\<td\>Accepted\</td\>([\s\S]*?)\</tr\>#", $contents, $match);
     preg_match_all("#\<font[\s\S]*?\>([\d]+?)\&#", $match[1][0], $match);
-    return addQuot(array_values($match[1]));
+    return array_values($match[1]);
 }
 
 function getMccmeProblems($id) {
@@ -35,7 +29,7 @@ function getMccmeProblems($id) {
     $contents = $json->result->text;
     preg_match_all("#\<a href=\"/moodle/mod/statements[\s\S]*?\>([\d]+?)\.#", $contents, $match);
     asort($match[1]);
-    return addQuot(array_values($match[1]));
+    return array_values($match[1]);
 }
 
 function getCodeforcesProblems($id) {
@@ -52,19 +46,26 @@ function getCodeforcesProblems($id) {
     $contents = implode("@", $match[1]);
     preg_match_all("#\"/problemset/([0-9a-zA-Z/]*?)\"\>[\s]*([0-9a-zA-Z]*) -[^@]*\<span class='verdict-accepted'\>#", $contents, $match);
     natsort($match[2]);
-    return addQuot(array_values(array_unique($match[2])));
+    return array_values(array_unique($match[2]));
 }
 
+$prefixes = array("", "acmp_", "timus_", "sgu_", "mccme_", "cf_");
+$getFunctions = array("", "getAcmpProblems", "getTimusProblems", "getSguProblems", "getMccmeProblems", "getCodeforcesProblems");
+
 function jsStats($users, $file) {
-    foreach ($users as $value) {
-        $stats = array(
-            "{userId: \"" . $value[1] . "\", problems: [" . implode(getAcmpProblems($value[1]), ", ") . "]}",
-            "{userId: \"" . $value[2] . "\", problems: [" . implode(getTimusProblems($value[2]), ", ") . "]}",
-            "{userId: \"" . $value[3] . "\", problems: [" . implode(getSguProblems($value[3]), ", ") . "]}",
-            "{userId: \"" . $value[4] . "\", problems: [" . implode(getMccmeProblems($value[4]), ", ") . "]}",
-            "{userId: \"" . $value[5] . "\", problems: [" . implode(getCodeforcesProblems($value[5]), ", ") . "]}"
-        );
-        $js[] = "{userName: \"" . $value[0] . "\", stats: [" . implode($stats, ", ") . "]}";
+    global $prefixes, $getFunctions;
+    foreach ($users as $user) {
+        $ids = array();
+        $problems = array();
+        for ($i = 1; $i < count($user); $i++) {
+            if ($user[$i] == "")
+                continue;
+            $ids[] = "\"" . $prefixes[$i] . $user[$i] . "\"";
+            $problems = array_merge($problems, array_map(create_function('$a', 'return "\"' . $prefixes[$i] . '" . $a . "\"";'), call_user_func($getFunctions[$i], $user[$i])));
+        }
+        asort($ids);
+        asort($problems);
+        $js[] = "{userName: \"" . $user[0] . "\", ids: [" . implode($ids, ", ") . "], problems: [" . implode($problems, ", ") . "]}";
     }
     file_put_contents($file, "stats = [" . implode($js, ",\n") . "];");
 }
