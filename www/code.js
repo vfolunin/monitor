@@ -192,7 +192,7 @@ function printRating() {
     h += "<td class=\"tdCount\"><span class=\"sortButton\" onclick=\"javascript:sortUsers(-1);\">Всего</span></td>";
     h += "<td class=\"tdCompare\" colspan=2><a href=\"javascript:printCmpStats(cmpNoA, cmpNoB);\">Сравнить выбранных</a></td></tr>";
     for (var i = 0; i < users.length; i++) {
-        h += "<tr><td>" + (i + 1) + "</td><td><a href=\"javascript:printStats('" + users[i].userNo + "');\">" + users[i].name + "</a></td>";
+        h += "<tr><td>" + (i + 1) + "</td><td class=\"userBlock\"><a href=\"javascript:printStats('" + users[i].userNo + "');\">" + users[i].name + "</a></td>";
         for (var j = 0; j < sites.length; j++)
             h += "<td>" + users[i].problemsCnt[j] + "</td>";
         h += "<td>" + users[i].total + "</td>";
@@ -201,8 +201,55 @@ function printRating() {
         h += "</tr>";
     }
     h += "</table>";
+    h += "<span id=\"trainingsContainer\"></span>";
     document.getElementById("container").innerHTML = h;
+    printTrainings();
 }
+
+//=== TRAININGS ====================================================================
+
+function getUserNo(userName) {
+    for (var i = 0; i < stats.length; i++)
+        if (stats[i].userName == userName)
+            return i;
+    return -1;
+}
+
+function getProblemUrl(prefixedProblemId) {
+    var prefix = prefixedProblemId.substr(0, prefixedProblemId.indexOf("_") + 1);
+    var problemId = prefixedProblemId.substr(prefixedProblemId.indexOf("_") + 1);
+    for (var i = 0; i < sites.length; i++)
+        if (sites[i].prefix == prefix)
+            return sites[i].problemUrl(problemId);
+    return "";
+}
+
+function printTrainings() {
+    var h = "";
+    for (var ti = 0; ti < trainings.length; ti++) {
+        h += "<div class=\"trainingHeader\">" + trainings[ti].name + "</div><table class=\"trainings\"><tr><td rowspan=2></td>";
+        for (var pi = 0; pi < trainings[ti].parts.length; pi++)
+            h += "<td colspan=" + trainings[ti].parts[pi].problems.length + ">" + trainings[ti].parts[pi].name + "</td>";
+        h += "</tr><tr>";
+        for (var pi = 0; pi < trainings[ti].parts.length; pi++)
+            for (var pj = 0; pj < trainings[ti].parts[pi].problems.length; pj++)
+                h += "<td class=\"problemBlock\"><a href=\"" + getProblemUrl(trainings[ti].parts[pi].problems[pj].id) + "\">" + trainings[ti].parts[pi].problems[pj].code + "</a></td>";
+        h += "</tr>";
+        trainings[ti].users.sort();
+        for (var ui = 0; ui < trainings[ti].users.length; ui++) {
+            var userNo = getUserNo(trainings[ti].users[ui]);
+            h += "<tr><td class=\"userBlock\"><a href=\"javascript:printStats('" + userNo + "');\">" + trainings[ti].users[ui] + "</a></td>";
+            for (var pi = 0; pi < trainings[ti].parts.length; pi++)
+                for (var pj = 0; pj < trainings[ti].parts[pi].problems.length; pj++)
+                    h += "<td class=\"problemBlock\">" + (stats[userNo].problems.indexOf(trainings[ti].parts[pi].problems[pj].id) != -1 ? "+" : "") + "</td>";
+            h += "</tr>";
+        }
+        h += "</table>";
+    }
+    document.getElementById("trainingsContainer").innerHTML = h;
+}
+
+//==================================================================================
 
 document.body.onload = function() { sortUsers(-1); };
 

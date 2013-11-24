@@ -4,7 +4,7 @@ body {
 
 table.rating {
     border: 1px solid black;
-    table-layout: fixed;
+    width: 1%;
     margin: auto;
 }
 
@@ -26,6 +26,11 @@ table.rating tr td span.sortButton {
 
 table.rating tr td.tdCount {
     width: 120px;
+    min-width: 120px;
+}
+
+table tr td.userBlock {
+    white-space: nowrap;
 }
 
 table.problems {
@@ -35,6 +40,7 @@ table.problems {
 
 table.problems tr td {
     width: 60px;
+    min-width: 60px;
     border: 1px solid black;
     padding: 5px;
     text-align: center;
@@ -50,4 +56,29 @@ table.problems tr td:empty {
 
 .txtMarkB, td.tdMarkB {
     background-color: fcc;
+}
+
+div.trainingHeader {
+    font-weight: bold;
+    margin: 30px 0 0 0;
+}
+
+table.trainings {
+    width: 1%;
+    margin: 5px auto auto auto;
+}
+
+table.trainings tr td {
+    border: 1px solid black;
+    padding: 5px;
+    text-align: center;
+}
+
+table.trainings tr td:empty {
+    border-color: white;
+}
+
+table.trainings tr td.problemBlock {
+    width: 30px;
+    min-width: 30px;
 }
