@@ -55,7 +55,8 @@ var sites = [
             var i = 0;
             while (i < pid.length && pid.charAt(i) >= 0 && pid.charAt(i) <= 9)
                 i++;
-            return this.url + "problemset/" + (pid.substr(0, 3) == "100" ? "gymProblem/" : "problem/") + pid.slice(0, i) + "/" + pid.slice(i);
+            var folder = (i >= 3 && (pid.substr(0, 3) == "100" || pid.substr(0, 3) == "200")) ? "gym/" : "contest/";
+            return this.url + folder + pid.slice(0, i) + "/problem/" + pid.slice(i);
         }
     }
 ];
