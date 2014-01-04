@@ -52,11 +52,9 @@ var sites = [
             return this.url + "profile/" + uid;
         },
         problemUrl : function(pid) {
-            var i = 0;
-            while (i < pid.length && pid.charAt(i) >= 0 && pid.charAt(i) <= 9)
-                i++;
-            var folder = (i >= 3 && (pid.substr(0, 3) == "100" || pid.substr(0, 3) == "200")) ? "gym/" : "contest/";
-            return this.url + folder + pid.slice(0, i) + "/problem/" + pid.slice(i);
+            var dotPos = pid.indexOf('.');
+            var folder = dotPos < 6 ? "contest/" : "gym/";
+            return this.url + folder + pid.slice(0, dotPos) + "/problem/" + pid.slice(dotPos + 1);
         }
     }
 ];

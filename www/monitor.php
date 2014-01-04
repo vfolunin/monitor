@@ -28,7 +28,6 @@ function getMccmeProblems($id) {
     $json = json_decode(file_get_contents("http://informatics.mccme.ru/moodle/ajax/ajax.php?lang_id=-1&status_id=0&objectName=submits&count=1000000000&action=getHTMLTable&user_id=" . $id));
     $contents = $json->result->text;
     preg_match_all("#\<a href=\"/moodle/mod/statements[\s\S]*?\>([\d]+?)\.#", $contents, $match);
-    asort($match[1]);
     return array_values($match[1]);
 }
 
@@ -44,9 +43,8 @@ function getCodeforcesProblems($id) {
         $contents .= file_get_contents("http://codeforces.ru/submissions/" . (strcmp($id, "") ? $id : " ") . "/page/" . ($i + 1));
     preg_match_all("#\<tr[\s\S]*?data-submission-id=\"[\d]+?\"\>([\s\S]*?)\</tr\>#", $contents, $match);
     $contents = implode("@", $match[1]);
-    preg_match_all("#\"/problemset/([0-9a-zA-Z/]*?)\"\>[\s]*([0-9a-zA-Z]*) -[^@]*\<span class='verdict-accepted'\>#", $contents, $match);
-    natsort($match[2]);
-    return array_values(array_unique($match[2]));
+    preg_match_all("#\"/problemset/(problem|gymProblem)/([0-9a-zA-Z/]*?)\"\>[\s]*([0-9a-zA-Z]*) -[^@]*\<span class='verdict-accepted'\>#", $contents, $match);
+    return array_values(array_unique(str_replace("/", ".", $match[2])));
 }
 
 $prefixes = array("", "acmp_", "timus_", "sgu_", "mccme_", "cf_");
@@ -63,8 +61,6 @@ function jsStats($users, $file) {
             $ids[] = "\"" . $prefixes[$i] . $user[$i] . "\"";
             $problems = array_merge($problems, array_map(create_function('$a', 'return "\"' . $prefixes[$i] . '" . $a . "\"";'), call_user_func($getFunctions[$i], $user[$i])));
         }
-        asort($ids);
-        asort($problems);
         $js[] = "{userName: \"" . $user[0] . "\", ids: [" . implode($ids, ", ") . "], problems: [" . implode($problems, ", ") . "]}";
     }
     file_put_contents($file, "stats = [" . implode($js, ",\n") . "];");
