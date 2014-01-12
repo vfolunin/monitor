@@ -28,7 +28,7 @@ function getMccmeProblems($id) {
     $json = json_decode(file_get_contents("http://informatics.mccme.ru/moodle/ajax/ajax.php?lang_id=-1&status_id=0&objectName=submits&count=1000000000&action=getHTMLTable&user_id=" . $id));
     $contents = $json->result->text;
     preg_match_all("#\<a href=\"/moodle/mod/statements[\s\S]*?\>([\d]+?)\.#", $contents, $match);
-    return array_values($match[1]);
+    return array_values(array_unique($match[1]));
 }
 
 function getCodeforcesProblems($id) {
