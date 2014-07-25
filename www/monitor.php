@@ -32,19 +32,13 @@ function getMccmeProblems($id) {
 }
 
 function getCodeforcesProblems($id) {
-    $userInfo = file_get_contents("http://codeforces.ru/submissions/" . (strcmp($id, "") ? $id : " ") . "/page/100000000");
-    preg_match_all("#\<title\>([\s\S]*?-[\s\S]*?)\</title\>#", $userInfo, $match);
-    if (count($match[1]) == 0)
-        return array();
-    preg_match_all("#\<span class=\"page-index active\" pageIndex=\"([\d]+?)\"\>#", $userInfo, $match);
-    $pageCnt = count($match[1]) ? $match[1][0] : 1;
-    $contents = "";
-    for ($i = 0; $i < $pageCnt; $i++)
-        $contents .= file_get_contents("http://codeforces.ru/submissions/" . (strcmp($id, "") ? $id : " ") . "/page/" . ($i + 1));
-    preg_match_all("#\<tr[\s\S]*?data-submission-id=\"[\d]+?\"\>([\s\S]*?)\</tr\>#", $contents, $match);
-    $contents = implode("@", $match[1]);
-    preg_match_all("#\"/problemset/(problem|gymProblem)/([0-9a-zA-Z/]*?)\"\>[\s]*([0-9a-zA-Z]*) -[^@]*\<span class='verdict-accepted'\>#", $contents, $match);
-    return array_values(array_unique(str_replace("/", ".", $match[2])));
+    $apiResponse = json_decode(file_get_contents("http://codeforces.ru/api/user.status?handle=" . $id . "&from=1&count=1000000000"), true);
+    $problems = array();
+    foreach ($apiResponse["result"] as $submission) {
+        if (!strcmp($submission["verdict"], "OK"))
+            $problems[] = $submission["problem"]["contestId"] . "." . $submission["problem"]["index"];
+    }
+    return array_unique($problems);
 }
 
 $prefixes = array("", "acmp_", "timus_", "sgu_", "mccme_", "cf_");
