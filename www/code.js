@@ -234,13 +234,23 @@ function printTrainings() {
             for (var pj = 0; pj < trainings[ti].parts[pi].problems.length; pj++)
                 h += "<td class=\"problemBlock\"><a href=\"" + getProblemUrl(trainings[ti].parts[pi].problems[pj].id) + "\">" + trainings[ti].parts[pi].problems[pj].code + "</a></td>";
         h += "</tr>";
-        trainings[ti].users.sort();
+        var userResults = [];
         for (var ui = 0; ui < trainings[ti].users.length; ui++) {
-            var userNo = getUserNo(trainings[ti].users[ui]);
-            h += "<tr><td class=\"userBlock\"><a href=\"javascript:printStats('" + userNo + "');\">" + trainings[ti].users[ui] + "</a></td>";
-            for (var pi = 0; pi < trainings[ti].parts.length; pi++)
-                for (var pj = 0; pj < trainings[ti].parts[pi].problems.length; pj++)
-                    h += "<td class=\"problemBlock\">" + (stats[userNo].problems.indexOf(trainings[ti].parts[pi].problems[pj].id) != -1 ? "+" : "") + "</td>";
+            var userResult = { userName: trainings[ti].users[ui], userNo: getUserNo(trainings[ti].users[ui]), totalProblems: 0, problemResults: [] };
+            for (var pi = 0; pi < trainings[ti].parts.length; pi++) {
+                for (var pj = 0; pj < trainings[ti].parts[pi].problems.length; pj++) {
+                    var problemSolved = (stats[userResult.userNo].problems.indexOf(trainings[ti].parts[pi].problems[pj].id) != -1);
+                    userResult.problemResults.push(problemSolved);
+                    userResult.totalProblems += problemSolved;
+                }
+            }
+            userResults.push(userResult);
+        }
+        userResults.sort(function(a, b) { return b.totalProblems - a.totalProblems; });
+        for (var ui = 0; ui < userResults.length; ui++) {
+            h += "<tr><td class=\"userBlock\"><a href=\"javascript:printStats('" + userResults[ui].userNo + "');\">" + userResults[ui].userName + "</a></td>";
+            for (var pi = 0; pi < userResults[ui].problemResults.length; pi++)
+                h += "<td class=\"problemBlock\">" + (userResults[ui].problemResults[pi] ? "+" : "") + "</td>";
             h += "</tr>";
         }
         h += "</table>";
