@@ -56,6 +56,17 @@ var sites = [
             var folder = dotPos < 6 ? "contest/" : "gym/";
             return this.url + folder + pid.slice(0, dotPos) + "/problem/" + pid.slice(dotPos + 1);
         }
+    },
+    {
+        name : "E-olymp",
+        prefix : "eolymp_",
+        url : "http://www.e-olymp.com/",
+        userUrl : function(uid) {
+            return this.url + "ru/users/" + uid;
+        },
+        problemUrl : function(pid) {
+            return this.url + "ru/problems/" + pid;
+        }
     }
 ];
 

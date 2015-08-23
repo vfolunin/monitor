@@ -41,8 +41,14 @@ function getCodeforcesProblems($id) {
     return array_unique($problems);
 }
 
-$prefixes = array("", "acmp_", "timus_", "sgu_", "mccme_", "cf_");
-$getFunctions = array("", "getAcmpProblems", "getTimusProblems", "getSguProblems", "getMccmeProblems", "getCodeforcesProblems");
+function getEolympProblems($id) {
+    $contents = file_get_contents("http://www.e-olymp.com/ru/users/" . $id . "/punchcard");
+    preg_match_all("#([\d]+)\" class=\"eo-punchcard__cell eo-punchcard__cell_active\"#", $contents, $match);
+    return array_values($match[1]);
+}
+
+$prefixes = array("", "acmp_", "timus_", "sgu_", "mccme_", "cf_", "eolymp_");
+$getFunctions = array("", "getAcmpProblems", "getTimusProblems", "getSguProblems", "getMccmeProblems", "getCodeforcesProblems", "getEolympProblems");
 
 function jsStats($users, $file) {
     global $prefixes, $getFunctions;
