@@ -1,38 +1,51 @@
 <?php
 
+function file_get_contents_curl($url) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    $data = curl_exec($ch);
+    curl_close($ch);
+    return $data;
+}
+
 function getAcmpProblems($id) {
-    $contents = file_get_contents("http://acmp.ru/?main=user&id=" . $id);
+    $contents = file_get_contents_curl("http://acmp.ru/?main=user&id=" . $id);
     preg_match_all("#\<p class=text\>([\s\S]*?)\</p\>#", $contents, $match);
     preg_match_all("#\<a href=\?main=task\&id_task=[\d]+?>([\d]+?)\</a\>#", $match[1][0], $match);
     return array_values($match[1]);
 }
 
 function getTimusProblems($id) {
-    $contents = file_get_contents("http://acm.timus.ru/author.aspx?id=" . $id);
+    $contents = file_get_contents_curl("http://acm.timus.ru/author.aspx?id=" . $id);
     preg_match_all("#\<TD CLASS=\"accepted\"\>\<A[\s\S]*?>([\d]+?)\</A\>\</TD\>#", $contents, $match);
     return array_values($match[1]);
 }
 
 function getSguProblems($id) {
-    $contents = file_get_contents("http://acm.sgu.ru/teaminfo.php?id=" . $id);
+    $contents = file_get_contents_curl("http://acm.sgu.ru/teaminfo.php?id=" . $id);
     preg_match_all("#\<tr\>\<td\>Accepted\</td\>([\s\S]*?)\</tr\>#", $contents, $match);
     preg_match_all("#\<font[\s\S]*?\>([\d]+?)\&#", $match[1][0], $match);
     return array_values($match[1]);
 }
 
 function getMccmeProblems($id) {
-    $userInfo = file_get_contents("http://informatics.mccme.ru/moodle/user/view.php?id=" . $id);
+    $userInfo = file_get_contents_curl("http://informatics.mccme.ru/moodle/user/view.php?id=" . $id);
     preg_match_all("#\<title\>[\s\S]*?:[\s\S]*?\</title\>#", $userInfo, $match);
     if (count($match[0]) == 0)
         return array();
-    $json = json_decode(file_get_contents("http://informatics.mccme.ru/moodle/ajax/ajax.php?lang_id=-1&status_id=0&objectName=submits&count=1000000000&action=getHTMLTable&user_id=" . $id));
+    $json = json_decode(file_get_contents_curl("http://informatics.mccme.ru/moodle/ajax/ajax.php?lang_id=-1&status_id=0&objectName=submits&count=1000000000&action=getHTMLTable&user_id=" . $id));
     $contents = $json->result->text;
     preg_match_all("#\<a href=\"/moodle/mod/statements[\s\S]*?\>([\d]+?)\.#", $contents, $match);
     return array_values(array_unique($match[1]));
 }
 
 function getCodeforcesProblems($id) {
-    $apiResponse = json_decode(file_get_contents("http://codeforces.ru/api/user.status?handle=" . $id . "&from=1&count=1000000000"), true);
+    $apiResponse = json_decode(file_get_contents_curl("http://codeforces.ru/api/user.status?handle=" . $id . "&from=1&count=1000000000"), true);
     $problems = array();
     foreach ($apiResponse["result"] as $submission) {
         if (!strcmp($submission["verdict"], "OK"))
@@ -42,7 +55,7 @@ function getCodeforcesProblems($id) {
 }
 
 function getEolympProblems($id) {
-    $contents = file_get_contents("http://www.e-olymp.com/ru/users/" . $id . "/punchcard");
+    $contents = file_get_contents_curl("http://www.e-olymp.com/ru/users/" . $id . "/punchcard");
     preg_match_all("#([\d]+)\" class=\"eo-punchcard__cell eo-punchcard__cell_active\"#", $contents, $match);
     return array_values($match[1]);
 }
