@@ -9,7 +9,8 @@ var sites = [
         },
         problemUrl : function(pid) {
             return this.url + "?main=task&id_task=" + pid;
-        }
+        },
+        active : 1
     },
     {
         name : "Timus Online Judge",
@@ -20,7 +21,8 @@ var sites = [
         },
         problemUrl : function(pid) {
             return this.url + "problem.aspx?num=" + pid;
-        }
+        },
+        active : 1
     },
     {
         name : "СГУ",
@@ -31,7 +33,8 @@ var sites = [
         },
         problemUrl : function(pid) {
             return this.url + "problem.php?problem=" + pid;
-        }
+        },
+        active : 0
     },
     {
         name : "МЦНМО",
@@ -42,7 +45,8 @@ var sites = [
         },
         problemUrl : function(pid) {
             return this.url + "moodle/mod/statements/view3.php?chapterid=" + pid;
-        }
+        },
+        active : 1
     },
     {
         name : "Codeforces",
@@ -55,7 +59,8 @@ var sites = [
             var dotPos = pid.indexOf('.');
             var folder = dotPos < 6 ? "contest/" : "gym/";
             return this.url + folder + pid.slice(0, dotPos) + "/problem/" + pid.slice(dotPos + 1);
-        }
+        },
+        active : 1
     },
     {
         name : "E-olymp",
@@ -66,7 +71,8 @@ var sites = [
         },
         problemUrl : function(pid) {
             return this.url + "ru/problems/" + pid;
-        }
+        },
+        active : 1
     },
     {
         name : "SPOJ",
@@ -77,7 +83,8 @@ var sites = [
         },
         problemUrl : function(pid) {
             return this.url + "problems/" + pid;
-        }
+        },
+        active : 1
     },
     {
         name : "HackerEarth",
@@ -88,7 +95,8 @@ var sites = [
         },
         problemUrl : function(pid) {
             return this.url + "problem/algorithm/" + pid;
-        }
+        },
+        active : 1
     }
 ];
 
@@ -97,10 +105,16 @@ for (var userNo = 0; userNo < stats.length; userNo++) {
     var user = {};
     user.userNo = userNo;
     user.name = stats[userNo].userName;
-    user.total = stats[userNo].problems.length;
+    user.total = 0;
     user.problemsCnt = [];
     for (var siteNo = 0; siteNo < sites.length; siteNo++)
-        user.problemsCnt.push(filterProblems(userNo, siteNo).length);
+	   if (sites[siteNo].active) {
+            var problemsCount = filterProblems(userNo, siteNo).length;
+            user.problemsCnt.push(problemsCount);
+            user.total += problemsCount;
+        } else {
+            user.problemsCnt.push(0);
+        }
     users.push(user);
 }
 
@@ -184,7 +198,8 @@ function printStats(userNo) {
     var h = "<h2>Решения пользователя " + stats[userNo].userName + " (всего: " + stats[userNo].problems.length + ")</h2>";
     h += "<h2>(<a href=\"javascript:printRating();\">назад</a>)</h2>";
     for (var siteNo = 0; siteNo < sites.length; siteNo++)
-        h += getProblemList(userNo, siteNo);
+        if (sites[siteNo].active)
+            h += getProblemList(userNo, siteNo);
     document.getElementById("container").innerHTML = h;
 }
 
@@ -194,7 +209,8 @@ function printCmpStats(userNoA, userNoB) {
             "<span class=\"txtMarkB\">B</span> &mdash; " + stats[userNoB].userName + " (всего: " + stats[userNoB].problems.length + ")</h2>";
     h += "<h2>(<a href=\"javascript:printRating();\">назад</a>)</h2>";
     for (var siteNo = 0; siteNo < sites.length; siteNo++)
-        h += getCmpProblemList(userNoA, userNoB, siteNo);
+        if (sites[siteNo].active)
+            h += getCmpProblemList(userNoA, userNoB, siteNo);
     document.getElementById("container").innerHTML = h;
 }
 
@@ -224,13 +240,15 @@ function printRating() {
     h += "<tr><td>#</td>";
     h += "<td><span class=\"sortButton\" onclick=\"javascript:sortUsers(-2);\">Участник</span></td>";
     for (var i = 0; i < sites.length; i++)
-        h += "<td class=\"tdCount\"><span class=\"sortButton\" onclick=\"javascript:sortUsers(" + i + ");\">" + sites[i].name + "</span></td>";
+        if (sites[i].active)
+            h += "<td class=\"tdCount\"><span class=\"sortButton\" onclick=\"javascript:sortUsers(" + i + ");\">" + sites[i].name + "</span></td>";
     h += "<td class=\"tdCount\"><span class=\"sortButton\" onclick=\"javascript:sortUsers(-1);\">Всего</span></td>";
     h += "<td class=\"tdCompare\" colspan=2><a href=\"javascript:printCmpStats(cmpNoA, cmpNoB);\">Сравнить выбранных</a></td></tr>";
     for (var i = 0; i < users.length; i++) {
         h += "<tr><td>" + (i + 1) + "</td><td class=\"userBlock\"><a href=\"javascript:printStats('" + users[i].userNo + "');\">" + users[i].name + "</a></td>";
         for (var j = 0; j < sites.length; j++)
-            h += "<td>" + users[i].problemsCnt[j] + "</td>";
+            if (sites[j].active)
+                h += "<td>" + users[i].problemsCnt[j] + "</td>";
         h += "<td>" + users[i].total + "</td>";
         h += "<td><input name=\"radioA\" type=\"radio\"" + (users[i].userNo == cmpNoA ? " checked" : "") + " onclick=\"cmpNoA =" + users[i].userNo + ";\"></td>";
         h += "<td><input name=\"radioB\" type=\"radio\"" + (users[i].userNo == cmpNoB ? " checked" : "") + " onclick=\"cmpNoB =" + users[i].userNo + ";\"></td>";

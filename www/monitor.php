@@ -52,8 +52,11 @@ function getMccmeProblems($id) {
         return array();
     $json = json_decode(file_get_contents_curl("http://informatics.mccme.ru/moodle/ajax/ajax.php?lang_id=-1&status_id=0&objectName=submits&count=1000000000&action=getHTMLTable&user_id=" . $id));
     $contents = $json->result->text;
-    preg_match_all("#\<a href=\"/moodle/mod/statements[\s\S]*?\>([\d]+?)\.#", $contents, $match);
-    return array_values(array_unique($match[1]));
+    preg_match_all("#\<a href=\"/moodle/mod/statements[\s\S]*?\>([\d]+?)\.#", $contents, $matchA);
+    $json = json_decode(file_get_contents_curl("http://informatics.mccme.ru/moodle/ajax/ajax.php?lang_id=-1&status_id=8&objectName=submits&count=1000000000&action=getHTMLTable&user_id=" . $id));
+    $contents = $json->result->text;
+    preg_match_all("#\<a href=\"/moodle/mod/statements[\s\S]*?\>([\d]+?)\.#", $contents, $matchB);
+    return array_values(array_unique(array_merge($matchA[1], $matchB[1])));
 }
 
 function getCodeforcesProblems($id) {
@@ -68,7 +71,7 @@ function getCodeforcesProblems($id) {
 
 function getEolympProblems($id) {
     $contents = file_get_contents_curl("http://www.e-olymp.com/ru/users/" . $id . "/punchcard");
-    preg_match_all("#100%\" href=\"\/ru\/problems\/([\d]+)#", $contents, $match);
+    preg_match_all("#([\d]+)\" class=\"eo-punchcard__cell eo-punchcard__cell_active\"#", $contents, $match);
     return array_values($match[1]);
 }
 
