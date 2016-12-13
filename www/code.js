@@ -47,7 +47,7 @@ var sites = [
     {
         name : "Codeforces",
         prefix : "cf_",
-        url : "http://codeforces.ru/",
+        url : "http://codeforces.com/",
         userUrl : function(uid) {
             return this.url + "profile/" + uid;
         },
@@ -66,6 +66,28 @@ var sites = [
         },
         problemUrl : function(pid) {
             return this.url + "ru/problems/" + pid;
+        }
+    },
+    {
+        name : "SPOJ",
+        prefix : "spoj_",
+        url : "http://www.spoj.com/",
+        userUrl : function(uid) {
+            return this.url + "users/" + uid;
+        },
+        problemUrl : function(pid) {
+            return this.url + "problems/" + pid;
+        }
+    },
+    {
+        name : "HackerEarth",
+        prefix : "hackerearth_",
+        url : "http://www.hackerearth.com/",
+        userUrl : function(uid) {
+            return this.url + "@" + uid + "/activity/hackerearth";
+        },
+        problemUrl : function(pid) {
+            return this.url + "problem/algorithm/" + pid;
         }
     }
 ];
@@ -98,6 +120,10 @@ function filterProblems(userNo, siteNo) {
     return filteredProblems;
 }
 
+function shortenProblemId(problemId) {
+    return problemId.length <= 8 ? problemId : problemId.substr(0, 8) + "...";
+}
+
 function getProblemList(userNo, siteNo) {
     var T_COL = 15;
     var userId = filterUserId(userNo, siteNo);
@@ -112,7 +138,7 @@ function getProblemList(userNo, siteNo) {
             h += "<tr>";
         h += "<td>"
         if (i < problems.length)
-            h += "<a href=\"" + sites[siteNo].problemUrl(problems[i]) + "\">" + problems[i] + "</a>";
+            h += "<a href=\"" + sites[siteNo].problemUrl(problems[i]) + "\">" + shortenProblemId(problems[i]) + "</a>";
         h += "</td>";
         if (i % T_COL == T_COL - 1)
             h += "</tr>";
@@ -135,13 +161,13 @@ function getCmpProblemList(userNoA, userNoB, siteNo) {
         if (k % T_COL == 0)
             h += "<tr>";
         if (i < problemsA.length && (j >= problemsB.length || strnatcmp(problemsA[i], problemsB[j]) < 0)) {
-            h += "<td class=\"tdMarkA\"><a href=\"" + sites[siteNo].problemUrl(problemsA[i]) + "\">" + problemsA[i] + "</a></td>";
+            h += "<td class=\"tdMarkA\"><a href=\"" + sites[siteNo].problemUrl(problemsA[i]) + "\">" + shortenProblemId(problemsA[i]) + "</a></td>";
             i++;
         } else if (j < problemsB.length && (i >= problemsA.length || strnatcmp(problemsA[i], problemsB[j]) > 0)) {
-            h += "<td class=\"tdMarkB\"><a href=\"" + sites[siteNo].problemUrl(problemsB[j]) + "\">" + problemsB[j] + "</a></td>";
+            h += "<td class=\"tdMarkB\"><a href=\"" + sites[siteNo].problemUrl(problemsB[j]) + "\">" + shortenProblemId(problemsB[j]) + "</a></td>";
             j++;
         } else if (i < problemsA.length && j < problemsB.length) {
-            h += "<td><a href=\"" + sites[siteNo].problemUrl(problemsA[i]) + "\">" + problemsA[i] + "</a></td>";
+            h += "<td><a href=\"" + sites[siteNo].problemUrl(problemsA[i]) + "\">" + shortenProblemId(problemsA[i]) + "</a></td>";
             i++;
             j++;
         } else {

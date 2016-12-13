@@ -14,10 +14,22 @@ function file_get_contents_curl($url) {
 }
 
 function getAcmpProblems($id) {
+    $problems = array();
+    for ($page = 0; ; $page++) {
+        $contents = file_get_contents_curl("http://acmp.ru/index.asp?main=status&id_mem=" . $id . "&id_res=1&page=" . $page);
+        preg_match_all("#\<td\>\<a href=[\/\S]*?\?main=task[\/\S]*?\>[0]*([0-9]+?)\<\/a\>#", $contents, $match);
+        if (empty($match[1]))
+            break;
+        foreach($match[1] as $problem)
+            $problems[] = $problem;
+    }
+    return array_unique($problems);
+    /*
     $contents = file_get_contents_curl("http://acmp.ru/?main=user&id=" . $id);
     preg_match_all("#\<p class=text\>([\s\S]*?)\</p\>#", $contents, $match);
     preg_match_all("#\<a href=\?main=task\&id_task=[\d]+?>([\d]+?)\</a\>#", $match[1][0], $match);
     return array_values($match[1]);
+    */
 }
 
 function getTimusProblems($id) {
@@ -56,12 +68,44 @@ function getCodeforcesProblems($id) {
 
 function getEolympProblems($id) {
     $contents = file_get_contents_curl("http://www.e-olymp.com/ru/users/" . $id . "/punchcard");
-    preg_match_all("#([\d]+)\" class=\"eo-punchcard__cell eo-punchcard__cell_active\"#", $contents, $match);
+    preg_match_all("#100%\" href=\"\/ru\/problems\/([\d]+)#", $contents, $match);
     return array_values($match[1]);
 }
 
-$prefixes = array("", "acmp_", "timus_", "sgu_", "mccme_", "cf_", "eolymp_");
-$getFunctions = array("", "getAcmpProblems", "getTimusProblems", "getSguProblems", "getMccmeProblems", "getCodeforcesProblems", "getEolympProblems");
+function getSpojProblems($id) {
+    $contents = file_get_contents_curl("http://www.spoj.com/users/" . $id);
+    preg_match_all("#solved classical[\s\S]*?<table.*>([\s\S]+?)<\/table>#", $contents, $match);
+    preg_match_all("#status\/(.+?),#", $match[1][0], $match);
+    return array_values($match[1]);
+}
+
+function getHackerearthProblems($id) {
+    $contents = file_get_contents_curl("https://www.hackerearth.com/users/pagelets/" . $id . "/solved-practice-problems");
+    preg_match_all("#algorithm\/(.+?)\/#", $contents, $match);
+    return array_values($match[1]);
+}
+
+$prefixes = array("",
+    "acmp_",
+    "timus_",
+    "sgu_",
+    "mccme_",
+    "cf_",
+    "eolymp_",
+    "spoj_",
+    "hackerearth_"
+);
+
+$getFunctions = array("",
+    "getAcmpProblems",
+    "getTimusProblems",
+    "getSguProblems",
+    "getMccmeProblems",
+    "getCodeforcesProblems",
+    "getEolympProblems",
+    "getSpojProblems",
+    "getHackerearthProblems"
+);
 
 function jsStats($users, $file) {
     global $prefixes, $getFunctions;

@@ -39,8 +39,8 @@ table.problems {
 }
 
 table.problems tr td {
-    width: 70px;
-    min-width: 70px;
+    min-width: 80px;
+    max-width: 80px;
     border: 1px solid black;
     padding: 5px;
     text-align: center;
