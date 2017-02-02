@@ -46,17 +46,24 @@ function getSguProblems($id) {
 }
 
 function getMccmeProblems($id) {
-    $userInfo = file_get_contents_curl("http://informatics.mccme.ru/moodle/user/view.php?id=" . $id);
-    preg_match_all("#\<title\>[\s\S]*?:[\s\S]*?\</title\>#", $userInfo, $match);
-    if (count($match[0]) == 0)
-        return array();
-    $json = json_decode(file_get_contents_curl("http://informatics.mccme.ru/moodle/ajax/ajax.php?lang_id=-1&status_id=0&objectName=submits&count=1000000000&action=getHTMLTable&user_id=" . $id));
-    $contents = $json->result->text;
-    preg_match_all("#\<a href=\"/moodle/mod/statements[\s\S]*?\>([\d]+?)\.#", $contents, $matchA);
-    $json = json_decode(file_get_contents_curl("http://informatics.mccme.ru/moodle/ajax/ajax.php?lang_id=-1&status_id=8&objectName=submits&count=1000000000&action=getHTMLTable&user_id=" . $id));
-    $contents = $json->result->text;
-    preg_match_all("#\<a href=\"/moodle/mod/statements[\s\S]*?\>([\d]+?)\.#", $contents, $matchB);
-    return array_values(array_unique(array_merge($matchA[1], $matchB[1])));
+    $problems = array();
+    for ($page = 0; ; $page++) {
+        $contents = file_get_contents_curl("http://informatics.mccme.ru/moodle/ajax/ajax.php?problem_id=0&user_id=" . $id . "&lang_id=-1&status_id=0&objectName=submits&count=100&with_comment=&page=" . $page . "&action=getHTMLTable");
+        preg_match_all("#chapterid=([\d]+)#", $contents, $match);
+        if (empty($match[1]))
+            break;
+        foreach($match[1] as $problem)
+            $problems[] = $problem;
+    }
+    for ($page = 0; ; $page++) {
+        $contents = file_get_contents_curl("http://informatics.mccme.ru/moodle/ajax/ajax.php?problem_id=0&user_id=" . $id . "&lang_id=-1&status_id=8&objectName=submits&count=100&with_comment=&page=" . $page . "&action=getHTMLTable");
+        preg_match_all("#chapterid=([\d]+)#", $contents, $match);
+        if (empty($match[1]))
+            break;
+        foreach($match[1] as $problem)
+            $problems[] = $problem;
+    }
+    return array_unique($problems);
 }
 
 function getCodeforcesProblems($id) {

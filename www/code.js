@@ -301,7 +301,7 @@ function printTrainings() {
             }
             userResults.push(userResult);
         }
-        userResults.sort(function(a, b) { return b.totalProblems - a.totalProblems; });
+        userResults.sort(function(a, b) { return b.totalProblems - a.totalProblems ? b.totalProblems - a.totalProblems : strcmp(a.userName, b.userName); });
         for (var ui = 0; ui < userResults.length; ui++) {
             h += "<tr><td class=\"userBlock\"><a href=\"javascript:printStats('" + userResults[ui].userNo + "');\">" + userResults[ui].userName + "</a></td>";
             for (var pi = 0; pi < userResults[ui].problemResults.length; pi++)
