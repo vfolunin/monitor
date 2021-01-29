@@ -1,9 +1,8 @@
-
 var sites = [
     {
         name : "ACMP",
         prefix : "acmp_",
-        url : "http://acmp.ru/",
+        url : "https://acmp.ru/",
         userUrl : function(uid) {
             return this.url + "?main=user&id=" + uid;
         },
@@ -15,7 +14,7 @@ var sites = [
     {
         name : "Timus Online Judge",
         prefix : "timus_",
-        url : "http://acm.timus.ru/",
+        url : "https://acm.timus.ru/",
         userUrl : function(uid) {
             return this.url + "author.aspx?id=" + uid;
         },
@@ -25,47 +24,26 @@ var sites = [
         active : 1
     },
     {
-        name : "СГУ",
-        prefix : "sgu_",
-        url : "http://acm.sgu.ru/",
-        userUrl : function(uid) {
-            return this.url + "teaminfo.php?id=" + uid;
-        },
-        problemUrl : function(pid) {
-            return this.url + "problem.php?problem=" + pid;
-        },
-        active : 0
-    },
-    {
-        name : "МЦНМО",
-        prefix : "mccme_",
-        url : "http://informatics.mccme.ru/",
-        userUrl : function(uid) {
-            return this.url + "moodle/submits/view.php?user_id=" + uid;
-        },
-        problemUrl : function(pid) {
-            return this.url + "moodle/mod/statements/view3.php?chapterid=" + pid;
-        },
-        active : 1
-    },
-    {
         name : "Codeforces",
         prefix : "cf_",
-        url : "http://codeforces.com/",
+        url : "https://codeforces.com/",
         userUrl : function(uid) {
             return this.url + "profile/" + uid;
         },
         problemUrl : function(pid) {
-            var dotPos = pid.indexOf('.');
-            var folder = dotPos < 6 ? "contest/" : "gym/";
-            return this.url + folder + pid.slice(0, dotPos) + "/problem/" + pid.slice(dotPos + 1);
+            var parts = pid.split('.');
+            if (parts[0] == "sgu")
+                return this.url + "problemsets/acmsguru/problem/99999/" + parts[1];
+            if (parts[0].length < 6)
+                return this.url + "problemset/problem/" + parts[0] + "/" + parts[1];
+            return this.url + "gym/" + parts[0] + "/problem/" + parts[1];
         },
         active : 1
     },
     {
         name : "E-olymp",
         prefix : "eolymp_",
-        url : "http://www.e-olymp.com/",
+        url : "https://www.e-olymp.com/",
         userUrl : function(uid) {
             return this.url + "ru/users/" + uid;
         },
@@ -77,7 +55,7 @@ var sites = [
     {
         name : "SPOJ",
         prefix : "spoj_",
-        url : "http://www.spoj.com/",
+        url : "https://www.spoj.com/",
         userUrl : function(uid) {
             return this.url + "users/" + uid;
         },
@@ -87,14 +65,14 @@ var sites = [
         active : 1
     },
     {
-        name : "HackerEarth",
-        prefix : "hackerearth_",
-        url : "http://www.hackerearth.com/",
+        name : "UVa Online Judge",
+        prefix : "uva_",
+        url : "https://onlinejudge.org/",
         userUrl : function(uid) {
-            return this.url + "@" + uid + "/activity/hackerearth";
+            return "https://uhunt.onlinejudge.org/id/" + uid;
         },
         problemUrl : function(pid) {
-            return this.url + "problem/algorithm/" + pid;
+            return "https://onlinejudge.org/external/" + Math.floor(pid / 100) + "/" + pid + ".pdf";
         },
         active : 1
     }
@@ -108,7 +86,7 @@ for (var userNo = 0; userNo < stats.length; userNo++) {
     user.total = 0;
     user.problemsCnt = [];
     for (var siteNo = 0; siteNo < sites.length; siteNo++)
-	   if (sites[siteNo].active) {
+        if (sites[siteNo].active) {
             var problemsCount = filterProblems(userNo, siteNo).length;
             user.problemsCnt.push(problemsCount);
             user.total += problemsCount;
@@ -260,8 +238,6 @@ function printRating() {
     printTrainings();
 }
 
-//=== TRAININGS ====================================================================
-
 function getUserNo(userName) {
     for (var i = 0; i < stats.length; i++)
         if (stats[i].userName == userName)
@@ -313,7 +289,4 @@ function printTrainings() {
     document.getElementById("trainingsContainer").innerHTML = h;
 }
 
-//==================================================================================
-
 document.body.onload = function() { sortUsers(-1); };
-

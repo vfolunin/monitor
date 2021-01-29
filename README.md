@@ -3,14 +3,12 @@
 Монитор предназначен для автоматического сбора и объединения статистики решений задач по программированию, размещённых в онлайн-архивах с системой автоматической проверки. В настоящий момент монитор поддерживает следующие архивы:
 * [ACMP][1]
 * [Timus Online Judge][2]
-* [Saratov SU Online Contester][3]
-* [МЦНМО][4]
-* [Codeforces][5]
-* [E-olymp][6]
-* [Sphere Online Judge][7]
-* [HackerEarth][8]
+* [Codeforces][3]
+* [E-olymp][4]
+* [Sphere Online Judge][5]
+* [UVa Online Judge][6]
 
-Монитор специально создавался для работы с популярными российскими архивами, не представленными в аналогичных зарубежных системах (например, ACMP и МЦНМО).
+Монитор специально создавался для работы с популярными российскими архивами, не представленными в аналогичных зарубежных системах.
 
 Монитор позволяет:
 * Вести таблицу пользователей, отражающую текущее количество решённых ими задач в каждом из поддерживаемых архивов, а также общее количество решённых задач; упорядочивать пользователей по количеству решённых задач в каждом из архивов или по общему количеству решённых задач;
@@ -25,7 +23,7 @@
 * index.html — HTML-страница для отображения монитора;
 * style.css — лист стилей для отображения монитора;
 * code.js — содержит функции отображения монитора;
-* strnatcmp.js — содержит функцию [strnatcmp][9];
+* strnatcmp.js — содержит функцию [strnatcmp][7];
 * trainings.js — содержит описания таблиц задач (тренировок).
 
 Файлы, необходимые для обновления монитора:
@@ -42,8 +40,8 @@
 ```php
 $users = array();
 
-//$users[] = array("Имя участника",                  "ACMP ID", "Timus ID", "СГУ ID", "МЦНМО ID", "Codeforces ID", "E-olymp ID", "SPOJ ID", "HackerEarth ID");
-$users[]   = array("Фолунин Владимир Александрович", "4876",    "96779",    "063062", "38459",    "CtrlAlt",       "ctrlalt",    "ctrlalt", "v.folunin");
+//$users[] = array(                 "Имя участника", "ACMP ID", "Timus ID", "Codeforces ID", "E-olymp ID", "SPOJ ID", "UVa ID");
+$users[]   = array("Фолунин Владимир Александрович",    "4876",    "96779",       "ctrlalt",    "ctrlalt", "ctrlalt", "882414");
 ```
 
 Описание является строковым массивом, начальный элемент которого содержит имя, под которым пользователь будет отображаться в мониторе; остальные элементы содержат идентификаторы пользователя в архивах. Порядок идентификаторов должен соответствовать порядку регистрации архивов в файлах code.js и monitor.php. Если пользователь не зарегистрирован в некотором архиве, соответствующий элемент массива должен быть пустой строкой.
@@ -63,7 +61,7 @@ $users[]   = array("Фолунин Владимир Александрович",
 ```javascript
 trainings = [
     {
-        name: "Задачи A+B",
+        name: "Стартовые задачи",
         users: [
             "Фолунин Владимир Александрович"
         ],
@@ -72,8 +70,23 @@ trainings = [
                 name: "",
                 problems: [
                     { code: "A", id: "acmp_1" },
-                    { code: "B", id: "timus_1000" },
-                    { code: "C", id: "sgu_100" }
+                    { code: "B", id: "timus_1000" }
+                ]
+            },
+            {
+                name: "Codeforces",
+                problems: [
+                    { code: "C", id: "cf_1.A" },
+                    { code: "D", id: "cf_100001.A" },
+                    { code: "E", id: "cf_sgu.100" }
+                ]
+            },
+            {
+                name: "",
+                problems: [
+                    { code: "F", id: "eolymp_1" },
+                    { code: "G", id: "spoj_TEST" },
+                    { code: "H", id: "uva_100" }
                 ]
             }
         ]
@@ -106,13 +119,11 @@ trainings = [
     * Добавить созданный объект в массив sites.
 
 
-[1]:http://acmp.ru
-[2]:http://acm.timus.ru
-[3]:http://acm.sgu.ru
-[4]:http://informatics.mccme.ru
-[5]:http://codeforces.com
-[6]:http://www.e-olymp.com
-[7]:http://www.spoj.com
-[8]:http://www.hackerearth.com
-[9]:https://github.com/kvz/phpjs/blob/master/functions/strings/strnatcmp.js
+[1]:https://acmp.ru
+[2]:https://acm.timus.ru
+[3]:https://codeforces.com
+[4]:https://www.e-olymp.com
+[5]:https://www.spoj.com
+[6]:https://onlinejudge.org
+[7]:https://github.com/kvz/phpjs/blob/master/functions/strings/strnatcmp.js
 

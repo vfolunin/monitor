@@ -24,12 +24,6 @@ function getAcmpProblems($id) {
             $problems[] = $problem;
     }
     return array_unique($problems);
-    /*
-    $contents = file_get_contents_curl("http://acmp.ru/?main=user&id=" . $id);
-    preg_match_all("#\<p class=text\>([\s\S]*?)\</p\>#", $contents, $match);
-    preg_match_all("#\<a href=\?main=task\&id_task=[\d]+?>([\d]+?)\</a\>#", $match[1][0], $match);
-    return array_values($match[1]);
-    */
 }
 
 function getTimusProblems($id) {
@@ -38,40 +32,18 @@ function getTimusProblems($id) {
     return array_values($match[1]);
 }
 
-function getSguProblems($id) {
-    $contents = file_get_contents_curl("http://acm.sgu.ru/teaminfo.php?id=" . $id);
-    preg_match_all("#\<tr\>\<td\>Accepted\</td\>([\s\S]*?)\</tr\>#", $contents, $match);
-    preg_match_all("#\<font[\s\S]*?\>([\d]+?)\&#", $match[1][0], $match);
-    return array_values($match[1]);
-}
-
-function getMccmeProblems($id) {
-    $problems = array();
-    for ($page = 0; ; $page++) {
-        $contents = file_get_contents_curl("http://informatics.mccme.ru/moodle/ajax/ajax.php?problem_id=0&user_id=" . $id . "&lang_id=-1&status_id=0&objectName=submits&count=100&with_comment=&page=" . $page . "&action=getHTMLTable");
-        preg_match_all("#chapterid=([\d]+)#", $contents, $match);
-        if (empty($match[1]))
-            break;
-        foreach($match[1] as $problem)
-            $problems[] = $problem;
-    }
-    for ($page = 0; ; $page++) {
-        $contents = file_get_contents_curl("http://informatics.mccme.ru/moodle/ajax/ajax.php?problem_id=0&user_id=" . $id . "&lang_id=-1&status_id=8&objectName=submits&count=100&with_comment=&page=" . $page . "&action=getHTMLTable");
-        preg_match_all("#chapterid=([\d]+)#", $contents, $match);
-        if (empty($match[1]))
-            break;
-        foreach($match[1] as $problem)
-            $problems[] = $problem;
-    }
-    return array_unique($problems);
-}
-
 function getCodeforcesProblems($id) {
-    $apiResponse = json_decode(file_get_contents_curl("http://codeforces.ru/api/user.status?handle=" . $id . "&from=1&count=1000000000"), true);
+    $apiResponse = json_decode(file_get_contents_curl("https://codeforces.com/api/user.status?handle=" . $id . "&from=1&count=1000000000"), true);
     $problems = array();
-    foreach ($apiResponse["result"] as $submission) {
-        if (!strcmp($submission["verdict"], "OK"))
-            $problems[] = $submission["problem"]["contestId"] . "." . $submission["problem"]["index"];
+    if (isset($apiResponse["result"])) {
+        foreach ($apiResponse["result"] as $submission) {
+            if (!strcmp($submission["verdict"], "OK")) {
+                if (isset($submission["problem"]["problemsetName"]) && !strcmp($submission["problem"]["problemsetName"], "acmsguru"))
+                    $problems[] = "sgu." . $submission["problem"]["index"];
+                else if (isset($submission["problem"]["contestId"]) && isset($submission["problem"]["index"]))
+                    $problems[] = $submission["problem"]["contestId"] . "." . $submission["problem"]["index"];
+            }
+        }
     }
     return array_unique($problems);
 }
@@ -89,32 +61,43 @@ function getSpojProblems($id) {
     return array_values($match[1]);
 }
 
-function getHackerearthProblems($id) {
-    $contents = file_get_contents_curl("https://www.hackerearth.com/users/pagelets/" . $id . "/solved-practice-problems");
-    preg_match_all("#algorithm\/(.+?)\/#", $contents, $match);
-    return array_values($match[1]);
+function getUvaProblemMap() {
+    $apiResponse = json_decode(file_get_contents_curl("https://uhunt.onlinejudge.org/api/p"), true);
+    $problemMap = array();
+    foreach ($apiResponse as $problem)
+        $problemMap[$problem[0]] = $problem[1];
+    return $problemMap;
+}
+
+function getUvaProblems($id) {
+    static $problemMap;
+    if (empty($problemMap))
+        $problemMap = getUvaProblemMap();
+    $apiResponse = json_decode(file_get_contents_curl("https://uhunt.onlinejudge.org/api/subs-user/" . $id), true);
+    $problems = array();
+    if (isset($apiResponse["subs"]))
+        foreach ($apiResponse["subs"] as $submission)
+            if ($submission[2] == 90)
+                $problems[] = $problemMap[$submission[1]];
+    return array_unique($problems);
 }
 
 $prefixes = array("",
     "acmp_",
     "timus_",
-    "sgu_",
-    "mccme_",
     "cf_",
     "eolymp_",
     "spoj_",
-    "hackerearth_"
+    "uva_"
 );
 
 $getFunctions = array("",
     "getAcmpProblems",
     "getTimusProblems",
-    "getSguProblems",
-    "getMccmeProblems",
     "getCodeforcesProblems",
     "getEolympProblems",
     "getSpojProblems",
-    "getHackerearthProblems"
+    "getUvaProblems"
 );
 
 function jsStats($users, $file) {
