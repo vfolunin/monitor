@@ -16,7 +16,7 @@ function file_get_contents_curl($url) {
 function getAcmpProblems($id) {
     $problems = array();
     for ($page = 0; ; $page++) {
-        $contents = file_get_contents_curl("http://acmp.ru/index.asp?main=status&id_mem=" . $id . "&id_res=1&page=" . $page);
+        $contents = file_get_contents_curl("http://acmp.ru/index.asp?main=status&id_mem=$id&id_res=1&page=$page");
         preg_match_all("#\<td\>\<a href=[\/\S]*?\?main=task[\/\S]*?\>[0]*([0-9]+?)\<\/a\>#", $contents, $match);
         if (empty($match[1]))
             break;
@@ -27,13 +27,13 @@ function getAcmpProblems($id) {
 }
 
 function getTimusProblems($id) {
-    $contents = file_get_contents_curl("http://acm.timus.ru/author.aspx?id=" . $id);
+    $contents = file_get_contents_curl("http://acm.timus.ru/author.aspx?id=$id");
     preg_match_all("#\<TD CLASS=\"accepted\"\>\<A[\s\S]*?>([\d]+?)\</A\>\</TD\>#", $contents, $match);
     return array_values($match[1]);
 }
 
 function getCodeforcesProblems($id) {
-    $apiResponse = json_decode(file_get_contents_curl("https://codeforces.com/api/user.status?handle=" . $id . "&from=1&count=1000000000"), true);
+    $apiResponse = json_decode(file_get_contents_curl("https://codeforces.com/api/user.status?handle=$id&from=1&count=1000000000"), true);
     $problems = array();
     if (isset($apiResponse["result"])) {
         foreach ($apiResponse["result"] as $submission) {
@@ -49,13 +49,13 @@ function getCodeforcesProblems($id) {
 }
 
 function getEolympProblems($id) {
-    $contents = file_get_contents_curl("http://www.e-olymp.com/ru/users/" . $id . "/punchcard");
+    $contents = file_get_contents_curl("http://www.e-olymp.com/ru/users/$id/punchcard");
     preg_match_all("#([\d]+)\" class=\"eo-punchcard__cell eo-punchcard__cell_active\"#", $contents, $match);
     return array_values($match[1]);
 }
 
 function getSpojProblems($id) {
-    $contents = file_get_contents_curl("http://www.spoj.com/users/" . $id);
+    $contents = file_get_contents_curl("http://www.spoj.com/users/$id");
     preg_match_all("#solved classical[\s\S]*?<table.*>([\s\S]+?)<\/table>#", $contents, $match);
     preg_match_all("#status\/(.+?),#", $match[1][0], $match);
     return array_values($match[1]);
@@ -73,7 +73,7 @@ function getUvaProblems($id) {
     static $problemMap;
     if (empty($problemMap))
         $problemMap = getUvaProblemMap();
-    $apiResponse = json_decode(file_get_contents_curl("https://uhunt.onlinejudge.org/api/subs-user/" . $id), true);
+    $apiResponse = json_decode(file_get_contents_curl("https://uhunt.onlinejudge.org/api/subs-user/$id"), true);
     $problems = array();
     if (isset($apiResponse["subs"]))
         foreach ($apiResponse["subs"] as $submission)
