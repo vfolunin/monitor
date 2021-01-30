@@ -1,16 +1,15 @@
 <?php
 
-function file_get_contents_curl($url) {
+function file_get_contents_curl($url, $cookie = "") {
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_AUTOREFERER, true);
-    curl_setopt($ch, CURLOPT_HEADER, 0);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array($cookie));
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    $data = curl_exec($ch);
+    $response = curl_exec($ch);
     curl_close($ch);
-    return $data;
+    return $response;
 }
 
 function getAcmpProblems($id) {
@@ -22,6 +21,56 @@ function getAcmpProblems($id) {
             break;
         foreach($match[1] as $problem)
             $problems[] = $problem;
+    }
+    return array_unique($problems);
+}
+
+$MCCME_USERNAME = "username";
+$MCCME_PASSWORD = "password";
+
+function getMccmeCookie() {
+    global $MCCME_USERNAME, $MCCME_PASSWORD;
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "https://informatics.msk.ru/login/index.php");
+    curl_setopt($ch, CURLOPT_HEADER, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    $response = curl_exec($ch);
+
+    preg_match_all("#logintoken\" value=\"(\S*)\"#", $response, $match);
+    $token = $match[1][0];
+    preg_match_all("#Set-Cookie: ([\S]+);#", $response, $match);
+    $cookie = "Cookie:" . $match[1][0];
+
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/x-www-form-urlencoded", $cookie));
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, "logintoken=$token&username=$MCCME_USERNAME&password=$MCCME_PASSWORD");
+    $response = curl_exec($ch);
+
+    preg_match_all("#Set-Cookie: ([\S]+);#", $response, $match);
+    $cookie = "Cookie:" . $match[1][0];
+
+    curl_close($ch);
+    return $cookie;
+}
+
+function getMccmeProblems($id) {
+    static $cookie;
+    if ($cookie == "")
+        $cookie = getMccmeCookie();
+    $problems = array();
+    foreach (array(0, 8) as $status_id) {
+        $contents = json_decode(file_get_contents_curl("https://informatics.msk.ru/py/problem/0/filter-runs?user_id=$id&status_id=$status_id&count=50&page=1", $cookie), true);
+        foreach($contents["data"] as $problem)
+            $problems[] = $problem["problem"]["id"];
+        $pages = $contents["metadata"]["page_count"];
+        for ($page = 2; $page <= $pages; $page++) {
+            $contents = json_decode(file_get_contents_curl("https://informatics.msk.ru/py/problem/0/filter-runs?user_id=$id&status_id=$status_id&count=50&page=$page", $cookie), true);
+            if (isset($contents["data"]))
+                foreach ($contents["data"] as $problem)
+                    $problems[] = $problem["problem"]["id"];
+        }
     }
     return array_unique($problems);
 }
@@ -84,6 +133,7 @@ function getUvaProblems($id) {
 
 $prefixes = array("",
     "acmp_",
+    "mccme_",
     "timus_",
     "cf_",
     "eolymp_",
@@ -93,6 +143,7 @@ $prefixes = array("",
 
 $getFunctions = array("",
     "getAcmpProblems",
+    "getMccmeProblems",
     "getTimusProblems",
     "getCodeforcesProblems",
     "getEolympProblems",

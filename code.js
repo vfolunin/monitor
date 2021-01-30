@@ -12,6 +12,18 @@ var sites = [
         active : 1
     },
     {
+        name : "МЦНМО",
+        prefix : "mccme_",
+        url : "https://informatics.msk.ru/",
+        userUrl : function(uid) {
+            return this.url + "submits/view.php?user_id=" + uid;
+        },
+        problemUrl : function(pid) {
+            return this.url + "mod/statements/view.php?chapterid=" + pid;
+        },
+        active : 1
+    },
+    {
         name : "Timus Online Judge",
         prefix : "timus_",
         url : "https://acm.timus.ru/",
