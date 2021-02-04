@@ -87,6 +87,18 @@ var sites = [
             return "https://onlinejudge.org/external/" + Math.floor(pid / 100) + "/" + pid + ".pdf";
         },
         active : 1
+    },
+    {
+        name : "CSES",
+        prefix : "cses_",
+        url : "https://cses.fi/problemset/",
+        userUrl : function(uid) {
+            return this.url + 'user/' + uid;
+        },
+        problemUrl : function(pid) {
+            return this.url + 'task/' + pid;
+        },
+        active : 1
     }
 ];
 

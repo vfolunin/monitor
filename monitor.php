@@ -131,6 +131,12 @@ function getUvaProblems($id) {
     return array_unique($problems);
 }
 
+function getCsesProblems($id) {
+    $contents = file_get_contents_curl("https://cses.fi/problemset/user/$id");
+    preg_match_all("#task/(\d+)/[^\>]+?full#", $contents, $match);
+    return array_values($match[1]);
+}
+
 $prefixes = array("",
     "acmp_",
     "mccme_",
@@ -138,7 +144,8 @@ $prefixes = array("",
     "cf_",
     "eolymp_",
     "spoj_",
-    "uva_"
+    "uva_",
+    "cses_"
 );
 
 $getFunctions = array("",
@@ -148,7 +155,8 @@ $getFunctions = array("",
     "getCodeforcesProblems",
     "getEolympProblems",
     "getSpojProblems",
-    "getUvaProblems"
+    "getUvaProblems",
+    "getCsesProblems"
 );
 
 function jsStats($users, $file) {

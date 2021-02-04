@@ -26,7 +26,8 @@ trainings = [
                 problems: [
                     { code: "G", id: "eolymp_1" },
                     { code: "H", id: "spoj_TEST" },
-                    { code: "I", id: "uva_100" }
+                    { code: "I", id: "uva_100" },
+                    { code: "J", id: "cses_1068" }
                 ]
             }
         ]

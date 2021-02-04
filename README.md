@@ -8,6 +8,7 @@
 * [E-olymp][eolymp]
 * [Sphere Online Judge][spoj]
 * [UVa Online Judge][uva]
+* [CSES Problemset][cses]
 
 Монитор специально создавался для работы с популярными российскими архивами, не представленными в аналогичных зарубежных системах.
 
@@ -41,8 +42,8 @@
 ```php
 $users = array();
 
-//$users[] = array(                 "Имя участника", "ACMP ID", "МЦНМО ID", "Timus ID", "Codeforces ID", "E-olymp ID", "SPOJ ID", "UVa ID");
-$users[]   = array("Фолунин Владимир Александрович",    "4876",    "38459",    "96779",       "ctrlalt",    "ctrlalt", "ctrlalt", "882414");
+//$users[] = array(                 "Имя участника", "ACMP ID", "МЦНМО ID", "Timus ID", "Codeforces ID", "E-olymp ID", "SPOJ ID", "UVa ID", "CSES ID");
+$users[]   = array("Фолунин Владимир Александрович",    "4876",    "38459",    "96779",       "ctrlalt",    "ctrlalt", "ctrlalt", "882414",   "27145");
 ```
 
 Описание является строковым массивом, начальный элемент которого содержит имя, под которым пользователь будет отображаться в мониторе; остальные элементы содержат идентификаторы пользователя в архивах. Порядок идентификаторов должен соответствовать порядку регистрации архивов в файлах code.js и monitor.php. Если пользователь не зарегистрирован в некотором архиве, соответствующий элемент массива должен быть пустой строкой.
@@ -94,7 +95,8 @@ trainings = [
                 problems: [
                     { code: "G", id: "eolymp_1" },
                     { code: "H", id: "spoj_TEST" },
-                    { code: "I", id: "uva_100" }
+                    { code: "I", id: "uva_100" },
+                    { code: "J", id: "cses_1068" }
                 ]
             }
         ]
@@ -134,4 +136,5 @@ trainings = [
 [eolymp]:https://www.e-olymp.com
 [spoj]:https://www.spoj.com
 [uva]:https://onlinejudge.org
+[cses]:https://cses.fi/problemset
 [strnatcmp]:https://github.com/kvz/phpjs/blob/master/functions/strings/strnatcmp.js
