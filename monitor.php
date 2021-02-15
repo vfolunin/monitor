@@ -11,7 +11,7 @@ function file_get_contents_curl($url, $cookie = "", $timeout = 0) {
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     if ($timeout)
-        usleep($timeout);
+        usleep($timeout * 1e6);
     $response = curl_exec($ch);
     curl_close($ch);
     return $response;
@@ -67,12 +67,12 @@ function getMccmeProblems($id) {
         $cookie = getMccmeCookie();
     $problems = array();
     foreach (array(0, 8) as $status_id) {
-        $contents = json_decode(file_get_contents_curl("https://informatics.msk.ru/py/problem/0/filter-runs?user_id=$id&status_id=$status_id&count=100&page=1", $cookie, 500), true);
+        $contents = json_decode(file_get_contents_curl("https://informatics.msk.ru/py/problem/0/filter-runs?user_id=$id&status_id=$status_id&count=100&page=1", $cookie, 0.3), true);
         foreach($contents["data"] as $problem)
             $problems[] = $problem["problem"]["id"];
         $pages = $contents["metadata"]["page_count"];
         for ($page = 2; $page <= $pages; $page++) {
-            $contents = json_decode(file_get_contents_curl("https://informatics.msk.ru/py/problem/0/filter-runs?user_id=$id&status_id=$status_id&count=100&page=$page", $cookie, 500), true);
+            $contents = json_decode(file_get_contents_curl("https://informatics.msk.ru/py/problem/0/filter-runs?user_id=$id&status_id=$status_id&count=100&page=$page", $cookie, 0.3), true);
             if (isset($contents["data"]))
                 foreach ($contents["data"] as $problem)
                     $problems[] = $problem["problem"]["id"];
