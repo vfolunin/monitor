@@ -47,7 +47,7 @@ function getMccmeCookie() {
     preg_match_all("#logintoken\" value=\"(\S*)\"#", $response, $match);
     $token = $match[1][0];
     preg_match_all("#Set-Cookie: ([\S]+);#", $response, $match);
-    $cookie = "Cookie:" . $match[1][1];
+    $cookie = "Cookie:" . $match[1][0];
 
     curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/x-www-form-urlencoded", $userAgent, $cookie));
     curl_setopt($ch, CURLOPT_POST, true);
@@ -55,7 +55,7 @@ function getMccmeCookie() {
     $response = curl_exec($ch);
 
     preg_match_all("#Set-Cookie: ([\S]+);#", $response, $match);
-    $cookie = "Cookie:" . $match[1][1];
+    $cookie = "Cookie:" . $match[1][0];
 
     curl_close($ch);
     return $cookie;
