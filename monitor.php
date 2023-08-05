@@ -19,11 +19,10 @@ function file_get_contents_curl($url, $cookie = "", $timeout = 0) {
 
 function getAcmpProblems($id) {
     $problems = array();
-    for ($page = 0; ; $page++) {
-        $contents = file_get_contents_curl("http://acmp.ru/index.asp?main=status&id_mem=$id&id_res=1&page=$page");
-        preg_match_all("#\<td\>\<a href=[\/\S]*?\?main=task[\/\S]*?\>[0]*([0-9]+?)\<\/a\>#", $contents, $match);
-        if (empty($match[1]))
-            break;
+    $contents = file_get_contents_curl("https://acmp.ru/index.asp?main=user&id=$id");
+    preg_match_all("#class=text>([\s\S]*?)<\/b#", $contents, $outerMatch);
+    foreach (array(0, 2) as $i) {
+        preg_match_all("#id_task=(\d+)#", $outerMatch[1][$i], $match);
         foreach($match[1] as $problem)
             $problems[] = $problem;
     }
